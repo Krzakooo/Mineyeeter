@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Document</title>
+  <link href="https://fonts.googleapis.com/css?family=Saira+Stencil+One&display=swap" rel="stylesheet">
+  <style>
+    body {
+
+      font-family: 'Saira Stencil One', cursive;
+      font-size: 20px;
+      color: gray;
+      text-align: center;
+    }
+
+    #box {
+      position: relative;
+    }
+
+    #hud {
+      width: 1000px;
+      height: 500px;
+
+    }
+
+    .tile {
+      width: 16px;
+      height: 16px;
+      background-color: gray;
+      border: 0.5px solid white;
+      border-radius: 2px;
+      transition: all .5s;
+      position: absolute;
+      font-size: 10px;
+      color: white
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    //hud
+    var hud = document.createElement("div")
+    hud.setAttribute("id", "hud")
+    document.body.appendChild(hud)
+
+    var inpootHeight = document.createElement("input")
+    var textHeight = document.createTextNode("Height: ")
+    hud.appendChild(textHeight)
+    hud.appendChild(inpootHeight)
+    hud.appendChild(document.createElement("br"))
+
+    var inpootWidth = document.createElement("input")
+    var textWidth = document.createTextNode("Width: ")
+    var parsedWidth = parseInt(inpootWidth.value)
+    hud.appendChild(textWidth)
+    hud.appendChild(inpootWidth)
+    hud.appendChild(document.createElement("br"))
+
+    var inpootMines = document.createElement("input")
+    var textMines = document.createTextNode("Mines: ")
+    var parsedMines = parseInt(inpootMines.value)
+    hud.appendChild(textMines)
+    hud.appendChild(inpootMines)
+    hud.appendChild(document.createElement("br"))
+    var desc = document.createTextNode("(Max height and width is 50)")
+    hud.appendChild(desc)
+    hud.appendChild(document.createElement("br"))
+
+    function intHeight() {
+      var parsedHeight = parseInt(inpootHeight.value)
+      if (inpootHeight.value != parsedHeight) {
+        inpootHeight.value = ""
+      }
+    }
+
+    function intWidth() {
+      var parsedWidth = parseInt(inpootWidth.value)
+      if (inpootWidth.value != parsedWidth) {
+        inpootWidth.value = ""
+      }
+    }
+
+    function intMines() {
+      var parsedMines = parseInt(inpootMines.value)
+      if (inpootMines.value != parsedMines) {
+        inpootMines.value = ""
+      }
+    }
+    setInterval(intHeight, 1000)
+    setInterval(intWidth, 1000)
+    setInterval(intMines, 1000)
+
+
+    var gen = document.createElement("button")
+    gen.innerText = "Generate"
+    //hudEnd
+
+    //generator
+    var count = 0
+    var counter = document.createElement("span")
+    counter.innerText = "timer: "
+
+    function timer() {
+      count++
+      counter.innerText = "timer: " + count
+    }
+    var minesCount = document.createElement("span")
+    minesCount.innerText = "Current mines 💣: "
+
+    function minesCounter() {
+      minesCount.innerText = "Current mines 💣: " + curMines
+    }
+
+    function minesAround(x, y) {
+      var minesNum = 0;
+      [
+        [x - 1, y],
+        [x + 1, y],
+        [x, y + 1],
+        [x, y - 1],
+        [x - 1, y + 1],
+        [x - 1, y - 1],
+        [x + 1, y + 1],
+        [x + 1, y - 1]
+      ].forEach((pos) => {
+        if (arr[pos[0]] && arr[pos[0]][pos[1]] && arr[pos[0]][pos[1]].isMine) {
+          minesNum++
+        }
+
+      })
+      return minesNum
+
+    }
+    var won = false
+
+    function minesAroundUncoverAll(x, y) {
+      [
+        [x - 1, y],
+        [x + 1, y],
+        [x, y + 1],
+        [x, y - 1],
+        [x - 1, y + 1],
+        [x - 1, y - 1],
+        [x + 1, y + 1],
+        [x + 1, y - 1]
+      ].forEach((pos) => {
+
+        if (arr[pos[0]] && arr[pos[0]][pos[1]]) {
+
+          if (!arrUncovered.includes(arr[pos[0]][pos[1]])) {
+            arrUncovered.push(arr[pos[0]][pos[1]])
+            arr[pos[0]][pos[1]].style.backgroundColor = "lightgray"
+
+            thisIndexX = pos[0]
+            thisIndexY = pos[1]
+            arrFlat = arr.flat()
+            var uncoverAllCount = minesAround(thisIndexX, thisIndexY)
+            if (uncoverAllCount == 0) {
+              arr[pos[0]][pos[1]].innerText.innerText = ""
+            } else {
+              arr[pos[0]][pos[1]].innerText = uncoverAllCount
+            }
+            arr[pos[0]][pos[1]].uncovered = true
+
+            var reee = minesAround(thisIndexX, thisIndexY)
+            if (reee == 0) {
+              minesAroundUncoverAll(thisIndexX, thisIndexY)
+            }
+
+          }
+
+        }
+
+      })
+
+    }
+
+    var curMines = 0
+    var arr = []
+    var arrFlat = []
+    var arrUncovered = []
+    var x = 0
+    var y = 0
+    var divTile
+    var timerInterval
+    var box = document.createElement("div")
+    box.setAttribute("id", "box")
+    document.body.appendChild(box)
+
+    var timerClicked = false
+    gen.onclick = function () {
+      maxMines = parseInt(inpootHeight.value) * parseInt(inpootWidth.value)
+      if (timerClicked == false && parseInt(inpootHeight.value) > 0 && parseInt(inpootWidth.value) > 0 && parseInt(
+          inpootMines.value) > 0 && parseInt(inpootMines.value) < maxMines && parseInt(inpootWidth.value) < 51 &&
+        parseInt(inpootHeight.value) < 51) {
+        counter.innerText = "timer: "
+        timerInterval = setInterval(timer, 1000)
+        var minesInterval = setInterval(minesCounter, 10)
+        timerClicked = true
+        arr = []
+        arrFlat = []
+        box.innerHTML = ""
+        arrUncovered = []
+        var height = parseInt(inpootHeight.value)
+        var width = parseInt(inpootWidth.value)
+        var mines = parseInt(inpootMines.value)
+        var firstClick = false
+        var thisIndexX
+        var thisIndexY
+        var thisIndexX2
+        var thisIndexY2
+        var allClickable = true
+        curMines = inpootMines.value
+
+        for (var x = 0; x < width; x++) {
+          arr[x] = []
+          for (var y = 0; y < height; y++) {
+            divTile = document.createElement("div")
+            divTile.setAttribute("class", "tile")
+            divTile.style.left = x * 16 + "px"
+            divTile.style.top = y * 16 + "px"
+            divTile.isMine = false
+            divTile.uncovered = false
+            divTile.clickable = 0
+            divTile.onclick = function () {
+              if (allClickable == true) {
+                if (this.clickable == 0) {
+                  if (firstClick == false) {
+                    this.style.backgroundColor = "lightgray"
+                    this.uncovered = true
+                    if (!arrUncovered.includes(this)) {
+                      arrUncovered.push(this)
+                    }
+                    for (var p = 0; p < mines; p++) {
+                      var ranHeight = Math.floor(Math.random() * height)
+                      var ranWidth = Math.floor(Math.random() * width)
+                      var mineTile = arr[ranWidth][ranHeight]
+                      if (mineTile == this) {
+                        p--
+                      } else if (mineTile.isMine == false) {
+                        mineTile.isMine = true
+                      } else {
+                        p--
+                      }
+
+                    }
+                    arrFlat = arr.flat()
+                    console.log(arrFlat)
+                    firstClick = true
+
+                    for (var i = 0; i < arr.length; i++) {
+                      for (var q = 0; q < arr[i].length; q++) {
+                        if (arr[i][q] == this) {
+                          thisIndexX2 = i
+                          thisIndexY2 = q
+                        }
+                      }
+
+                    }
+                    var minesAroundCount = minesAround(thisIndexX2, thisIndexY2)
+                    if (minesAroundCount == 0) {
+                      this.innerText = ""
+                    } else {
+                      this.innerText = minesAroundCount
+                    }
+
+                    if (minesAroundCount == 0) {
+                      minesAroundUncoverAll(thisIndexX2, thisIndexY2)
+                    }
+                    if (inpootMines.value == arrFlat.length - arrUncovered.length) {
+                      alert("wygrałeś")
+                      clearInterval(timerInterval)
+                      clearInterval(minesInterval)
+                      timerClicked = false
+                      count = 0
+                      allClickable = false
+                      for (var i = 0; i < arrFlat.length; i++) {
+                        if (arrFlat[i].isMine == true) {
+                          arrFlat[i].style.backgroundColor = "limegreen"
+                          arrFlat[i].uncovered = true
+                        }
+                      }
+
+                    }
+
+                  } else if (this.isMine == false) {
+
+                    if (!arrUncovered.includes(this)) {
+                      arrUncovered.push(this)
+                    }
+                    this.style.backgroundColor = "lightgray"
+                    this.uncovered = true
+
+                    for (var i = 0; i < arr.length; i++) {
+                      for (var q = 0; q < arr[i].length; q++) {
+                        if (arr[i][q] == this) {
+                          thisIndexX = i
+                          thisIndexY = q
+                        }
+                      }
+
+                    }
+
+                    var minesAroundCount = minesAround(thisIndexX, thisIndexY)
+                    if (minesAroundCount == 0) {
+                      this.innerText = ""
+                    } else {
+                      this.innerText = minesAroundCount
+                    }
+                    if (minesAroundCount == 0) {
+
+                      minesAroundUncoverAll(thisIndexX, thisIndexY)
+                    }
+
+                    if (inpootMines.value == arrFlat.length - arrUncovered.length || won == true) {
+                      alert("wygrałeś")
+                      clearInterval(timerInterval)
+                      clearInterval(minesInterval)
+                      timerClicked = false
+                      count = 0
+                      allClickable = false
+                      for (var i = 0; i < arrFlat.length; i++) {
+                        if (arrFlat[i].isMine == true) {
+                          arrFlat[i].style.backgroundColor = "limegreen"
+                          arrFlat[i].uncovered = true
+                        }
+                      }
+
+                    }
+
+                  } else {
+                    for (var i = 0; i < arrFlat.length; i++) {
+                      if (arrFlat[i].isMine == true) {
+                        arrFlat[i].style.backgroundColor = "red"
+                        arrFlat[i].innerText = "💣"
+                        arrFlat[i].uncovered = true
+                      } else {
+                        arrFlat[i].uncovered = true
+                      }
+                    }
+                    this.style.backgroundColor = "crimson"
+                    this.innerText = "☠"
+                    alert("przegrałeś")
+                    clearInterval(timerInterval)
+                    clearInterval(minesInterval)
+                    timerClicked = false
+                    count = 0
+                    allClickable = false
+
+                  }
+                }
+              }
+            }
+            box.appendChild(divTile)
+            arr[x][y] = divTile
+
+            //flag
+            document.oncontextmenu = function () {
+              return false
+            }
+            divTile.oncontextmenu = function () {
+              if (this.uncovered == false && this.clickable == 0) {
+                this.innerText = "💣"
+                this.clickable = 1
+                curMines--
+              } else if (this.uncovered == false && this.clickable == 1) {
+                this.innerText = "?"
+                this.clickable = 2
+                curMines++
+              } else if (this.uncovered == false && this.clickable == 2) {
+                this.innerText = ""
+                this.clickable = 0
+              }
+
+            }
+          }
+
+        }
+        console.log(arr)
+      } else {
+        alert("error")
+      }
+
+    }
+    hud.appendChild(gen)
+    hud.appendChild(document.createElement("br"))
+    hud.appendChild(minesCount)
+    hud.appendChild(document.createElement("br"))
+    hud.appendChild(counter)
+    hud.appendChild(document.createElement("br"))
+    //generatorEnd
+  </script>
+</body>
+
+</html>
